@@ -1,6 +1,8 @@
 <?php
 require_once '\develop\php\ftp-php\src\Ftp.php';
 
+//This function moves a remote FTP site to the local file system
+//Afterward, the file will be removed from the FTP server
 function ftp_moveFrom($conn_id, $aFile){
 	try {
 		error_log("Moving file $aFile from ftp site");
@@ -42,6 +44,8 @@ function ftp_moveFrom($conn_id, $aFile){
 	}
 }
 
+//This function moves a file from the local file system to an FTP server.
+//Afterward, the file will be removed from the local system
 function ftp_moveTo($conn_id, $aFile){
 	try {
 		error_log("Moving file $aFile to ftp site");
@@ -83,7 +87,7 @@ function ftp_moveTo($conn_id, $aFile){
 
 }
 
-// Sample using native php
+// Wrapper to handle moving files to or from an FTP site
 function ftpExchange($ftpSite, $ftpUID, $ftpPWD, $ftpAction, $ftpFilemask, $subDir) {
 	// set up basic connection
 	$conn_id = ftp_connect ( $ftpSite ) or die ( "Couldn't connect to $ftp_server" );
@@ -98,7 +102,7 @@ function ftpExchange($ftpSite, $ftpUID, $ftpPWD, $ftpAction, $ftpFilemask, $subD
 		echo "Connected to $ftpSite, for user $ftpUID\r\n";
 	}
 	
-	//Upload public distribution files
+	//Synchronize directories
 	if (ftp_chdir($conn_id, '/'.$subDir)){
 		chdir($subDir);
 		
@@ -106,10 +110,10 @@ function ftpExchange($ftpSite, $ftpUID, $ftpPWD, $ftpAction, $ftpFilemask, $subD
 			// upload any local files
 			foreach(glob($ftpFilemask) as $aFile) {
 				echo 'Uploading ',$aFile,"\r\n";
-				$upload = ftp_moveTo($conn_id, $aFile);
+				ftp_moveTo($conn_id, $aFile);
 			}
 		} else {
-			// download any files on server
+			// download any files on ftp site
 			$contents_on_server = ftp_nlist ( $conn_id, $ftpFilemask );
 			if ($contents_on_server){
 				foreach ( $contents_on_server as $aFile ) {
@@ -126,19 +130,21 @@ function ftpExchange($ftpSite, $ftpUID, $ftpPWD, $ftpAction, $ftpFilemask, $subD
 	echo "Disconnected\r\n";
 }
 
-error_reporting(E_ALL); 
-ini_set('log_errors','1'); 
-ini_set('display_errors','1');
+function Main(){
+	error_reporting(E_ALL); 
+	ini_set('log_errors','1'); 
+	ini_set('display_errors','1');
+	
+	
+	//set Published files
+	$SubDir = 'pub';
+	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'upload', $FileMask, $SubDir);
+	
+	//retrieve incoming files
+	$SubDir = 'incoming';
+	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'download', $FileMask, $SubDir);
+}
 
-$ftpSite = 'mysite';
-$ftpUID = 'myusername';
-$ftpPWD = 'mypassword';
-
-$SubDir = 'pub';
-$FileMask = 'bar*.*';
-ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'upload', $FileMask, $SubDir);
-$FileMask = 'foo*.*';
-$SubDir = 'incoming';
-ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'download', $FileMask, $SubDir);
+Main();
 
 ?>
