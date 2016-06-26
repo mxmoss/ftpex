@@ -1,5 +1,4 @@
 <?php
-require_once '\develop\php\ftp-php\src\Ftp.php';
 
 //This function moves a remote FTP site to the local file system
 //Afterward, the file will be removed from the FTP server
@@ -17,7 +16,7 @@ function ftp_moveFrom($conn_id, $aFile){
 		}
 		
 		// download using tempfilename
-		if (!ftp_get ( $conn_id, $tmpFileName, $tmpFileName, Ftp::BINARY )) {
+		if (!ftp_get ( $conn_id, $tmpFileName, $tmpFileName, FTP_BINARY )) {
 			throw new Exception("Cannot download tmp file");
 		}
 				
@@ -60,7 +59,7 @@ function ftp_moveTo($conn_id, $aFile){
 		}
 		
 		// put on ftp site using tempfilename
-		if (!ftp_put ( $conn_id, $tmpFileName, $tmpFileName, Ftp::BINARY )) {
+		if (!ftp_put ( $conn_id, $tmpFileName, $tmpFileName, FTP_BINARY )) {
 			throw new Exception("Cannot upload tmp file");
 		}
 		// rename back to original name
@@ -135,17 +134,17 @@ function Main(){
 	ini_set('log_errors','1'); 
 	ini_set('display_errors','1');
 	
-  $ftpSite = 'mysite';
-  $ftpUID = 'myusername';
-  $ftpPWD = 'mypassword';
+	$ftpSite = 'mysite';
+	$ftpUID = 'myusername';
+	$ftpPWD = 'mypassword';
 	
 	//set Published files
 	$SubDir = 'pub';
-  $FileMask = 'bar*.*';
+	$FileMask = 'bar*.*';
 	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'upload', $FileMask, $SubDir);
 	
 	//retrieve incoming files
-  $FileMask = 'foo*.*';
+	$FileMask = 'foo*.*';
 	$SubDir = 'incoming';
 	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'download', $FileMask, $SubDir);
 }
