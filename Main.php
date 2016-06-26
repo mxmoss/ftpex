@@ -80,12 +80,11 @@ function ftp_moveTo($conn_id, $aFile){
 	} catch ( Exception $e ) {
 		error_log("Error: $e->getMessage ()");
 	}
+
 }
 
 // Sample using native php
-function ftpNative($ftpSite, $ftpUID, $ftpPWD) {
-	$getFiles = 'foo*.*';
-	$putFiles = 'bar*.*';
+function ftpExchange($ftpSite, $ftpUID, $ftpPWD, $ftpAction, $ftpFilemask, $subDir) {
 	// set up basic connection
 	$conn_id = ftp_connect ( $ftpSite ) or die ( "Couldn't connect to $ftp_server" );
 	
@@ -99,20 +98,29 @@ function ftpNative($ftpSite, $ftpUID, $ftpPWD) {
 		echo "Connected to $ftpSite, for user $ftpUID\r\n";
 	}
 	
-	// upload any local files
-	foreach(glob($putFiles) as $aFile) {
-		echo 'Uploading ',$aFile,"\r\n";
-		$upload = ftp_moveTo($conn_id, $aFile);
+	//Upload public distribution files
+	if (ftp_chdir($conn_id, '/'.$subDir)){
+		chdir($subDir);
+		
+		if ($ftpAction == 'upload'){
+			// upload any local files
+			foreach(glob($ftpFilemask) as $aFile) {
+				echo 'Uploading ',$aFile,"\r\n";
+				$upload = ftp_moveTo($conn_id, $aFile);
+			}
+		} else {
+			// download any files on server
+			$contents_on_server = ftp_nlist ( $conn_id, $ftpFilemask );
+			if ($contents_on_server){
+				foreach ( $contents_on_server as $aFile ) {
+					echo 'Downloading ',$aFile,"\r\n";
+					ftp_moveFrom( $conn_id, $aFile);
+				}
+			}
+		}
+		chdir('..');
 	}
 	
-	// download any files on server
-	$contents_on_server = ftp_nlist ( $conn_id, $getFiles );
-	if ($contents_on_server){
-		foreach ( $contents_on_server as $aFile ) {
-			echo 'Downloading ',$aFile,"\r\n";
-			ftp_moveFrom( $conn_id, $aFile);
-		}
-	}
 	// close the FTP stream
 	ftp_close ( $conn_id );
 	echo "Disconnected\r\n";
@@ -120,7 +128,17 @@ function ftpNative($ftpSite, $ftpUID, $ftpPWD) {
 
 error_reporting(E_ALL); 
 ini_set('log_errors','1'); 
-ini_set('display_errors','1'); 
-ftpNative ( 'mysite', 'myusername', 'mypassword' );
+ini_set('display_errors','1');
+
+$ftpSite = 'mysite';
+$ftpUID = 'myusername';
+$ftpPWD = 'mypassword';
+
+$SubDir = 'pub';
+$FileMask = 'bar*.*';
+ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'upload', $FileMask, $SubDir);
+$FileMask = 'foo*.*';
+$SubDir = 'incoming';
+ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'download', $FileMask, $SubDir);
 
 ?>
