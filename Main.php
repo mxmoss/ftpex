@@ -7,6 +7,12 @@ class DX_Ftp {
 	var $ftpSite;
 	var $ftpUID;
 	var $ftpPWD;
+	var $logfile; 
+	
+	function logIt($msg){
+	    echo date("Y-m-d H:i:s ")."$msg\r\n";
+		file_put_contents($this->logfile,  date("Y-m-d H:i:s ")."$msg\r\n", FILE_APPEND);
+	}
 	
 	// This method moves a remote FTP site to the local file system
 	// Afterward, the file will be removed from the FTP server
@@ -98,14 +104,14 @@ class DX_Ftp {
 		// login with username and password
 		$login_result = ftp_login ( $this->conn_id, $this->ftpUID, $this->ftpPWD );
 		if ((! $this->conn_id) || (! $login_result)) {
-			echo "Failed attempt to connect to $this->ftpSite, for user $this->ftpUID\r\n";
+			$this->logIt("Failed attempt to connect to $this->ftpSite, for user $this->ftpUID");
 			exit ();
 		} else {
-			echo "Connected to $this->ftpSite for user $this->ftpUID\r\n";
+			$this->logIt("Connected to $this->ftpSite for user $this->ftpUID");
 		}
 		
 		// Synchronize directories
-		echo "Change to $subDir\r\n";
+		$this->logIt("Change to $subDir");
 		if (ftp_chdir ( $this->conn_id, '/' . $subDir )) {
 			chdir ( $subDir );
 			
@@ -119,7 +125,7 @@ class DX_Ftp {
 			$file_count = count ( $file_list );
 			if ($file_list) {
 				foreach ( $file_list as $aFile ) {
-					echo $msg, $aFile, "\r\n";
+		            $this->logIt("$msg $aFile");
 					if ($ftpMode == 'upload') {
 						$this->ftp_moveTo($aFile);
 					} else {
@@ -130,13 +136,13 @@ class DX_Ftp {
 			}
 			chdir ( '..' );
 			if ($file_count != $i) {
-				echo "ERROR: List of input files differs from the count of actual files." ;
+		        $this->logIt("ERROR: List of input files differs from the count of actual files." );
 			}
 		}
 		
 		// close the FTP stream
 		ftp_close ( $this->conn_id );
-		echo "Disconnected\r\n";
+		$this->logIt("Disconnected");
 	}
 
 }
@@ -144,6 +150,9 @@ class DX_Ftp {
 //mainline logic
 function Main() {
 	$dx_ftp = new DX_Ftp;
+	
+	$dx_ftp->logfile = 'ftp_err.log';
+	$dx_ftp->logIt($dx_ftp->logfile);
 	
 	$dx_ftp->ftpSite = 'mysite';
 	$dx_ftp->ftpUID = 'myusername';
