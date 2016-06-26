@@ -135,12 +135,17 @@ function Main(){
 	ini_set('log_errors','1'); 
 	ini_set('display_errors','1');
 	
+  $ftpSite = 'mysite';
+  $ftpUID = 'myusername';
+  $ftpPWD = 'mypassword';
 	
 	//set Published files
 	$SubDir = 'pub';
+  $FileMask = 'bar*.*';
 	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'upload', $FileMask, $SubDir);
 	
 	//retrieve incoming files
+  $FileMask = 'foo*.*';
 	$SubDir = 'incoming';
 	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'download', $FileMask, $SubDir);
 }
