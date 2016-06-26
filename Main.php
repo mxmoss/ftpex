@@ -105,23 +105,29 @@ function ftpExchange($ftpSite, $ftpUID, $ftpPWD, $ftpAction, $ftpFilemask, $subD
 	if (ftp_chdir($conn_id, '/'.$subDir)){
 		chdir($subDir);
 		
+		$i = 0;
+		$msg = $ftpAction.'ing ';
 		if ($ftpAction == 'upload'){
-			// upload any local files
-			foreach(glob($ftpFilemask) as $aFile) {
-				echo 'Uploading ',$aFile,"\r\n";
-				ftp_moveTo($conn_id, $aFile);
-			}
+			$file_list = glob($ftpFilemask);
 		} else {
-			// download any files on ftp site
-			$contents_on_server = ftp_nlist ( $conn_id, $ftpFilemask );
-			if ($contents_on_server){
-				foreach ( $contents_on_server as $aFile ) {
-					echo 'Downloading ',$aFile,"\r\n";
+			$file_list = ftp_nlist ( $conn_id, $ftpFilemask );
+		}
+		$file_count = count($file_list);
+		if ($file_list){
+			foreach($file_list as $aFile) {
+				echo $msg,$aFile,"\r\n";
+				if ($ftpAction == 'upload'){
+					ftp_moveTo($conn_id, $aFile);
+				} else {
 					ftp_moveFrom( $conn_id, $aFile);
 				}
+				$i++;
 			}
 		}
 		chdir('..');
+		if ($file_count <> $i){
+			echo "ERROR: List of input files differs from the count of actual files.";
+		}
 	}
 	
 	// close the FTP stream
@@ -138,12 +144,14 @@ function Main(){
 	$ftpUID = 'myusername';
 	$ftpPWD = 'mypassword';
 	
-	//set Published files
+	//Move these files to /pub on FTP server  
+	//*.gpg, *.pdf  (case sensitive)
 	$SubDir = 'pub';
 	$FileMask = 'bar*.*';
 	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'upload', $FileMask, $SubDir);
 	
-	//retrieve incoming files
+	//Retrieve incoming files from FTP server
+	//*.gpg
 	$FileMask = 'foo*.*';
 	$SubDir = 'incoming';
 	ftpExchange($ftpSite, $ftpUID, $ftpPWD, 'download', $FileMask, $SubDir);
