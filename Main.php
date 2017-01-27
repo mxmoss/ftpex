@@ -112,7 +112,7 @@ class DX_Ftp {
 		
 		// Synchronize directories
 		$this->logIt("Change to $subDir");
-		if (ftp_chdir ( $this->conn_id, '/' . $subDir )) {
+		if (ftp_chdir ( $this->conn_id, $subDir )) {
 			chdir ( $subDir );
 			
 			$i = 0;
@@ -151,22 +151,21 @@ class DX_Ftp {
 function Main() {
 	$dx_ftp = new DX_Ftp;
 	
-	$dx_ftp->logfile = 'ftp_err.log';
+  $ini_array = parse_ini_file("dxftp.ini");
+	$dx_ftp->ftpSite = $ini_array["site"];
+	$dx_ftp->ftpUID = $ini_array["UID"];
+	$dx_ftp->ftpPWD = $ini_array["PWD"];
+	$dx_ftp->logfile = __DIR__."\\".$ini_array["logfile"];
 	$dx_ftp->logIt($dx_ftp->logfile);
-	
-	$dx_ftp->ftpSite = 'mysite';
-	$dx_ftp->ftpUID = 'myusername';
-	$dx_ftp->ftpPWD = 'mypassword';
 	
 	// Move these files to /pub on FTP server
 	// eg: *.gpg, *.pdf (case sensitive)
-	$FileMask = 'bar*.*';
+	$FileMask = '*.gpg';
 	$dx_ftp->ftpExchange ('upload', $FileMask, 'pub' );
 	
 	// Retrieve /incoming files from FTP server
-	$FileMask = 'foo*.*';
+	$FileMask = '*.gpg';
 	$dx_ftp->ftpExchange ('download', $FileMask, 'incoming' );
-	
 }
 
 Main ();
