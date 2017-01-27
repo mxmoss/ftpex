@@ -157,15 +157,19 @@ function Main() {
 	$dx_ftp->ftpPWD = $ini_array["PWD"];
 	$dx_ftp->logfile = __DIR__."\\".$ini_array["logfile"];
 	$dx_ftp->logIt($dx_ftp->logfile);
-	
-	// Move these files to /pub on FTP server
-	// eg: *.gpg, *.pdf (case sensitive)
-	$FileMask = '*.gpg';
-	$dx_ftp->ftpExchange ('upload', $FileMask, 'pub' );
-	
-	// Retrieve /incoming files from FTP server
-	$FileMask = '*.gpg';
-	$dx_ftp->ftpExchange ('download', $FileMask, 'incoming' );
+
+  //loop through CSV list of files to exchange
+  //examples:
+  //  'upload', '*.gpg', 'pub'
+  //  'download', '*.xml', 'incoming'
+  if (($handle = fopen("script.csv", "r")) !== FALSE) {
+    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+      if (count($data) >= 2){
+        $dx_ftp->ftpExchange($data[0], $data[1], $data[2]);
+      }
+    }
+    fclose($handle);
+  }
 }
 
 Main ();
