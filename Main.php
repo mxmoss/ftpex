@@ -135,8 +135,8 @@ class DX_Ftp {
 				}
 			}
 			chdir ( '..' );
-			if ($file_count != $i) {
-		        $this->logIt("ERROR: List of input files differs from the count of actual files." );
+			if  ($file_count != $i) {
+		        $this->logIt("ERROR: List of input files $file_count differs from the count of actual files $i." );
 			}
 		}
 		
@@ -150,22 +150,24 @@ class DX_Ftp {
 //mainline logic
 function Main() {
 	$dx_ftp = new DX_Ftp;
+  $work_dir = __DIR__;
 	
-  $ini_array = parse_ini_file("dxftp.ini");
+  $ini_array = parse_ini_file($work_dir."\\"."dxftp.ini");
 	$dx_ftp->ftpSite = $ini_array["site"];
 	$dx_ftp->ftpUID = $ini_array["UID"];
 	$dx_ftp->ftpPWD = $ini_array["PWD"];
-	$dx_ftp->logfile = __DIR__."\\".$ini_array["logfile"];
+	$dx_ftp->logfile = $work_dir."\\".$ini_array["logfile"];
 	$dx_ftp->logIt($dx_ftp->logfile);
+  $dx_ftp->logIt("Working directory $work_dir".PHP_EOL);
 
   //loop through CSV list of files to exchange
   //examples:
   //  'upload', '*.gpg', 'pub'
   //  'download', '*.xml', 'incoming'
-  if (($handle = fopen("script.csv", "r")) !== FALSE) {
+  if (($handle = fopen($work_dir."\\"."script.csv", "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
       if (count($data) >= 2){
-        $dx_ftp->ftpExchange($data[0], $data[1], $data[2]);
+        $dx_ftp->ftpExchange(trim($data[0]), trim($data[1]), trim($data[2]));
       }
     }
     fclose($handle);

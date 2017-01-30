@@ -1,4 +1,4 @@
-'upload', '*.gpg', 'pub'
-'download', '*.dky', 'incoming'
-'download', '*.xml', 'incoming'
-'download', '*.gpg', 'incoming'
+upload,*.gpg, pub
+download, *.dky,incoming
+ download,*.xml,incoming
+download,*.gpg,incoming
