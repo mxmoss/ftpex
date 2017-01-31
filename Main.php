@@ -149,21 +149,22 @@ class DX_Ftp {
 
 //mainline logic
 function Main() {
-	$dx_ftp = new DX_Ftp;
+	//Assume that dxftp.ini and script.csv files are in current directory
   $work_dir = __DIR__;
-	
   $ini_array = parse_ini_file($work_dir."\\"."dxftp.ini");
+
+	$dx_ftp = new DX_Ftp;
 	$dx_ftp->ftpSite = $ini_array["site"];
 	$dx_ftp->ftpUID = $ini_array["UID"];
 	$dx_ftp->ftpPWD = $ini_array["PWD"];
-	$dx_ftp->logfile = $work_dir."\\".$ini_array["logfile"];
+	$dx_ftp->logfile = $ini_array["logfile"];
 	$dx_ftp->logIt($dx_ftp->logfile);
   $dx_ftp->logIt("Working directory $work_dir".PHP_EOL);
 
   //loop through CSV list of files to exchange
   //examples:
-  //  'upload', '*.gpg', 'pub'
-  //  'download', '*.xml', 'incoming'
+  // upload,*.gpg,pub
+  // download,*.xml,incoming
   if (($handle = fopen($work_dir."\\"."script.csv", "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
       if (count($data) >= 2){
