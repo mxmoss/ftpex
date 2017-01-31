@@ -100,6 +100,7 @@ class DX_Ftp {
 	function ftpExchange($ftpMode, $ftpFilemask, $subDir) {
 		// set up basic connection
 		$this->conn_id = ftp_connect ( $this->ftpSite ) or die ( "Couldn't connect to $ftp_server" );
+    ftp_pasv($this->conn_id, true);
 		
 		// login with username and password
 		$login_result = ftp_login ( $this->conn_id, $this->ftpUID, $this->ftpPWD );
@@ -135,7 +136,7 @@ class DX_Ftp {
 				}
 			}
 			chdir ( '..' );
-			if  ($file_count != $i) {
+			if  ($file_list && $file_count != $i) {
 		        $this->logIt("ERROR: List of input files $file_count differs from the count of actual files $i." );
 			}
 		}
